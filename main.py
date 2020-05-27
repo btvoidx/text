@@ -1,10 +1,11 @@
-import json
+from json import loads
 from PIL import Image, ImageDraw, ImageFont
+from statistics import mean
 
 def load_scenes(file:str = "input.json"):
 	# Open file, read it, load into scenes list
 	with open(file, "r+") as f:
-		scenes = json.loads(f.read())
+		scenes = loads(f.read())
 
 	return scenes
 
@@ -15,14 +16,12 @@ def get_global(parameter, scene):
 	else:
 		return gscenes["global"][parameter]
 
-def main(scenes:dict):
-	scene_number = 0
-
+def draw(scenes:dict):
 	global gscenes
 	gscenes = scenes
 
 	for scene in scenes["scenes"]:
-		scene_number += 1
+		scene_number = scenes["scenes"].index(scene)
 
 		# Create new image
 		img = Image.new('RGB', tuple(scenes["global"]["dimensions"]), color = tuple(get_global("background", scene)))
@@ -39,18 +38,44 @@ def main(scenes:dict):
 
 			draw.text(position, scene["text"], fill = tuple(get_global("color", scene)), font = font)
 
+			img.save(f"output/scene{scene_number}.png")
+
 		# But if text type is dictionary, then we do some woodoo magic
 		elif type(scene["text"]) == type(list()):
-			# Finding biggest font size
-			bfont = sorted(get_global("font-size", x) for x in scene["text"])[-1]
-			font = ImageFont.truetype(f"fonts/{scenes['global']['font']}", bfont)
+			# Finding average font size
+			afont = int(mean(get_global("font-size", x) for x in scene["text"]))
+			afont = ImageFont.truetype(f"fonts/{scenes['global']['font']}", afont)
+
 			full_text = "".join(f"{x['text']} " for x in scene["text"])
-			print(full_text)
+			current_text = ""
 
+			for part in scene["text"]:
+				part_number = scene["text"].index(part)
 
-		# Save the image
-		img.save(f"scene{scene_number}.png")
+				current_text += part["text"]
+
+				W, H = tuple(scenes["global"]["dimensions"])
+				w, h = draw.textsize(current_text, font = afont)
+
+				offset = (W - w) / 2
+
+				for part in scene["text"]:
+					if part_number < scene["text"].index(part):
+						continue
+
+					# Getting new font and position
+					font = ImageFont.truetype(f"fonts/{get_global('font', part)}", get_global("font-size", part))
+					_, h = draw.textsize(current_text, font = font)
+					position = offset, (H - h) / 2
+
+					draw.text(position, part["text"], fill = tuple(get_global("color", part)), font = font)
+
+					offset += draw.textsize(part["text"], font = font)[0]
+
+				img.save(f"output/scene{scene_number}_{part_number}.png")
+				img.paste(tuple(get_global("background", scene)), tuple([0, 0] + scenes["global"]["dimensions"]))
+
 
 if __name__ == '__main__':
 	scenes = load_scenes()
-	main(scenes)
+	draw(scenes)

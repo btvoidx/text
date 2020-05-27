@@ -15,11 +15,19 @@
 		},
 		{
 			"text": [{
-					"text": "just", "color": [255, 255, 0], "delay": 0.33
+					"text": "Привет", "delay": 0.66
 				}, {
-					"text": "a", "delay": 1
+					"text": ", а ", "delay": 0.1
 				}, {
-					"text": "test", "delay": 0
+					"text": "вы ", "delay": 0.1, "color": [255, 60, 60]
+				}, {
+					"text": "знали", "delay": 0.66
+				}, {
+					"text": ", что ", "delay": 0.1
+				}, {
+					"text": "этот текст ", "delay": 1, "color": [255, 60, 60]
+				}, {
+					"text": "имеет другой шрифт?", "delay": 0, "color": [255, 60, 60], "font": "BalsamiqSans-Regular.ttf"
 				}],
 			"background": [255, 255, 255],
 			"stay": 5
