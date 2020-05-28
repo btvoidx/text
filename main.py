@@ -1,16 +1,32 @@
 from json import loads
 from PIL import Image, ImageDraw, ImageFont
 from statistics import mean
+from os import system, listdir, remove
 
 current_frame = 0
 FPS = 30
+ffmpeg = "ffmpeg/ffmpeg.exe"
+ffplay = "ffmpeg/ffplay.exe"
+
+# TODO: Текст уезжает по высоте
+
+# Removes old frames and outputs
+def setup_workspace():
+	try:
+		remove("output/output.mp4")
+
+		files = listdir("output/frames/")
+		for file in files:
+		    remove(f"output/frames/{file}")
+	except:
+		pass
 
 # Saves image X times to match video FPS
 def save_frames(img, stay:float):
 	global FPS
 	global current_frame
 	for x in range(int(FPS * stay)):
-		#img.save(f"output/frames/frame{current_frame:05}.png")
+		img.save(f"output/frames/frame{current_frame}.png")
 		print(f"Saving frame: {current_frame}")
 		current_frame += 1
 
@@ -78,7 +94,7 @@ def draw(scenes:dict):
 						continue
 
 					# Getting new font and position
-					font = ImageFont.truetype(f"fonts/{get_global('font', dpart)}", get_global("font-size", part))
+					font = ImageFont.truetype(f"fonts/{get_global('font', dpart)}", get_global("font-size", dpart))
 					_, h = draw.textsize(current_text, font = font)
 					position = offset, (H - h) / 2
 
@@ -92,5 +108,7 @@ def draw(scenes:dict):
 
 
 if __name__ == '__main__':
+	setup_workspace()
 	scenes = load_scenes()
 	draw(scenes)
+	system(f"{ffmpeg} -r {FPS} -f image2 -s {scenes['global']['dimensions'][0]}x{scenes['global']['dimensions'][1]} -i output/frames/frame%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p output/output.mp4")
