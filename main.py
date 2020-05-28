@@ -95,7 +95,7 @@ def draw(scenes:dict):
 
 					# Getting new font and position
 					font = ImageFont.truetype(f"fonts/{get_global('font', dpart)}", get_global("font-size", dpart))
-					_, h = draw.textsize(current_text, font = font)
+					_, h = draw.textsize(full_text, font = font)
 					position = offset, (H - h) / 2
 
 					draw.text(position, dpart["text"], fill = tuple(get_global("color", dpart)), font = font)
